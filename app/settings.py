@@ -132,7 +132,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://dan-iell.github.io",
     "http://localhost:3000", # For local testing
     "http://127.0.0.1:5500", # For local testing
-    "sabi-biz-backend.onrender.com",
+    "http://sabi-biz-backend.onrender.com",
 ]
 
 REST_FRAMEWORK = {
@@ -144,3 +144,5 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ],
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
