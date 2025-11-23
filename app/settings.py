@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-8ycz(hw$sb#m%3sp8ax(6n-_ekc3(iob9f)3yx((d&7flm%ymk
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -132,7 +132,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://dan-iell.github.io",
     "http://localhost:3000", # For local testing
     "http://127.0.0.1:5500", # For local testing
-    "http://sabi-biz-backend.onrender.com",
+    "https://sabi-biz-backend.onrender.com",
 ]
 
 REST_FRAMEWORK = {
