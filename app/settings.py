@@ -45,9 +45,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -132,6 +132,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://dan-iell.github.io",
     "http://localhost:3000", # For local testing
     "http://127.0.0.1:5500", # For local testing
+    "sabi-biz-backend.onrender.com",
 ]
 
 REST_FRAMEWORK = {
