@@ -19,7 +19,14 @@ class Sales(models.Model):
 
     def __str__(self):
         return f"{self.product_name} - {self.amount} units"
-    
+
+class CATEGORY_TYPE(models.TextChoices):
+    RENT = 'RENT', 'Rent'
+    MARKETING = 'MARKETING', 'Marketing'
+    SUPPLIES = 'SUPPLIES', 'Supplies'
+    LOGISTICS = 'LOGISTICS', 'Logistics'
+    OTHER = 'OTHER', 'Other'
+
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -27,6 +34,7 @@ class Expense(models.Model):
     description = models.TextField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField(auto_now_add=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_TYPE.choices, default=CATEGORY_TYPE.OTHER)
 
     def __str__(self):
         return f"{self.description} - {self.amount}"
