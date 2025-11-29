@@ -1,46 +1,66 @@
-from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
-from django.contrib.auth import authenticate, login
-from django.conf import settings
+from django.http import JsonResponse
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User 
-from django.views.decorators.csrf import csrf_exempt
 import json
 from django.db.models import Sum
-from .models import Sales, Expense, Product
-
+from .models import Sales, Expense
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
-@csrf_exempt  
-def login(request):
+@csrf_exempt
+def login_view(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        username = data.get("username")
-        password = data.get("password")
+        try: 
+            data = json.loads(request.body)
+            username = data.get("username")
+            password = data.get("password")
 
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)  # creates session
-            return JsonResponse({"message": "Login successful", "user": user.username})
-        else:
-            return JsonResponse({"error": "Invalid credentials"}, status=400)
-
+            if not username or not password:
+                return JsonResponse({"error": "Username and password are required"}, status=400)
+            
+            user = authenticate(request, username=username, password=password)
+            
+            if user is not None:
+                login(request, user)  # creates session
+                return JsonResponse({"message": "Login successful", "user": user.username})
+            else:
+                return JsonResponse({"error": "Invalid credentials"}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        
     return JsonResponse({"error": "POST required"}, status=405)
 
 # register
+@csrf_exempt
 def register(request):
     if request.method == "POST":
-        username = user.get("username")
-        email = user.get("email")
-        password = user.get("password")
+        try:
+            data = json.loads(request.body)
+            username = data.get("username")
+            email = data.get("email")
+            password = data.get("password")
+
+            if not all({username, email, password}):
+                return JsonResponse({"error": "All fields are required"}, status=400)
+
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({"error": "Email already exists"}, status=400)
+
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({"error": "Username already exists"}, status=400)
+            
+            # Create user
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.save()
+
+            return JsonResponse({"message": "Registration successful"}, status=201)
         
-        if User.objects.filter(email=email).exists():
-            return JsonResponse({"error": "Email already exists"}, status=400)
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.save()
-        return JsonResponse({"message": "Registration successful"})
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        
     return JsonResponse({"error": "POST required"}, status=405)
 
 # dashboard
@@ -82,3 +102,8 @@ def dashboard(request):
         'best_selling_product': best_selling_name,
         'recent_activity': recent_activity
     })
+
+@csrf_exempt
+def logout_view(request):
+    logout(request)
+    return redirect('home')
