@@ -64,31 +64,31 @@ def register(request):
     return JsonResponse({"error": "POST required"}, status=405)
 
 # dashboard
-
 @login_required
 def dashboard(request):
     user = request.user
 
+    # Total expenses and profit
     total_expenses = Expense.objects.filter(user=user).aggregate(total=Sum('amount'))['total'] or 0
-    total_sales = Sales.objects.filter(user=user).aggregate(total=Sum('total_amount'))['total'] or 0
+    total_sales = Sales.objects.filter(user=user).aggregate(total=Sum('amount'))['total'] or 0
     profit = total_sales - total_expenses
 
     # Best selling product
     best_selling = (
         Sales.objects.filter(user=user)
-        .values('product__name')
+        .values('product_name')
         .annotate(total_qty=Sum('quantity'))
         .order_by('-total_qty')
         .first()
     )
-    best_selling_name = best_selling['product__name'] if best_selling else None
+    best_selling_name = best_selling['product_name'] if best_selling else None
 
     # Recent activity
-    recent_sales = list(Sales.objects.filter(user=user).order_by('-date_created')[:5].values(
-        'product__name', 'quantity', 'total_amount', 'date_created'
+    recent_sales = list(Sales.objects.filter(user=user).order_by('-date')[:5].values(
+        'product_name', 'quantity', 'amount', 'date'
     ))
-    recent_expenses = list(Expense.objects.filter(user=user).order_by('-date_created')[:5].values(
-        'description', 'amount', 'date_created'
+    recent_expenses = list(Expense.objects.filter(user=user).order_by('-date')[:5].values(
+        'description', 'amount', 'date'
     ))
 
     recent_activity = {
@@ -97,11 +97,71 @@ def dashboard(request):
     }
 
     return JsonResponse({
+        "username": user.username,
+        'total_sales': total_sales,
         'total_expenses': total_expenses,
         'profit': profit,
         'best_selling_product': best_selling_name,
         'recent_activity': recent_activity
     })
+
+@csrf_exempt
+@login_required
+def add_sale(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            product_name = data.get("product_name")
+            quantity = data.get("quantity")
+            amount = data.get("amount")
+
+            if not all([product_name, quantity, amount]):
+                return JsonResponse({"error": "All fields are required"}, status=400)
+
+            sale = Sales.objects.create(
+                user=request.user,
+                product_name=product_name,
+                quantity=quantity,
+                amount=amount
+            )
+            sale.save()
+
+            return JsonResponse({"message": "Sale added successfully"}, status=201)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    return JsonResponse({"error": "POST required"}, status=405)
+
+@csrf_exempt
+@login_required
+def add_expense(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            name = data.get("name")
+            description = data.get("description")
+            amount = data.get("amount")
+
+            if not all([name, description, amount]):
+                return JsonResponse({"error": "All fields are required"}, status=400)
+
+            expense = Expense.objects.create(
+                user=request.user,
+                name=name,
+                description=description,
+                amount=amount
+            )
+            expense.save()
+
+            return JsonResponse({"message": "Expense added successfully"}, status=201)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    return JsonResponse({"error": "POST required"}, status=405)
 
 @csrf_exempt
 def logout_view(request):
