@@ -9,5 +9,4 @@ urlpatterns = [
     path("logout/", logout_view, name="logout"),
     path("add_sale/", add_sale, name="add_sale"),
     path("add_expense/", add_expense, name="add_expense"),
-
 ]
